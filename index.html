@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width initial-scale=1.0">
+    <title></title>
+    <style>
+        * {
+            font-family: Arial, serif;
+        }
+
+        header {
+            padding: 0.1em 1.5em;
+            background: #eeeeff;
+        }
+
+        .statuscontainer {
+            text-align: left;
+            margin-left: 40px;
+        }
+
+        .ioctrl {
+            margin-bottom: 20px;
+        }
+
+        .ioctrl p {
+            padding: 0;
+            margin: 0;
+        }
+
+        .statusindicator {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: red;
+            display: inline-block;
+        }
+
+        .inputcontainer {
+            margin-left: 40px;
+        }
+
+        input[type="button"] {
+            height: 40px;
+            min-width: 50px;
+            border-radius: 20px;
+            margin: 10px 2px 0;
+            font-size: 15px;
+            color: white;
+        }
+
+        .green_btn {
+            background-color: green;
+        }
+
+        .red_btn {
+            background-color: red;
+        }
+
+        .blue_btn {
+            background-color: blue;
+        }
+    </style>
+</head>  
+<body>
+    <header>
+        <h1>ESP8266 Asynchronous Web Server Example</h1>
+    </header>
+    <div class="ioctrlcontainer">
+        <h2>Control Panel</h2>
+         
+        <div class="ioctrl">
+            <p>LED 1</p>
+            <div class="statuscontainer">
+                <span>Status:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="statusindicator"></span>
+            </div>
+            <div class="inputcontainer">
+                <input type="button" class="green_btn" value="on" name="led1on" onclick="">
+                <input type="button" class="red_btn" value="off" name="led1off" onclick="">
+                <input type="button" class="blue_btn" value="momentary" name="led1moment" onclick="">            
+                <input type="button" class="blue_btn" value="blink" name="led1blink" onclick="">
+            </div>
+        </div>
+
+        <div class="ioctrl">
+            <p>LED 2</p>
+            <div class="statuscontainer">
+                <span>Status:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="statusindicator"></span>
+            </div>
+            <div class="inputcontainer">
+                <input type="button" class="green_btn" value="on" name="led2on" onclick="">
+                <input type="button" class="red_btn" value="off" name="led2off" onclick="">
+                <input type="button" class="blue_btn" value="momentary" name="led2moment" onclick="">            
+                <input type="button" class="blue_btn" value="blink" name="led2blink" onclick="">
+            </div>
+        </div>
+
+        <div class="ioctrl">
+            <p>Button 1</p> 
+            <div class="statuscontainer">
+                <span>Status:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                <span class="statusindicator"></span>
+            </div>
+        </div>
+    </div>
+</body>
+<script>
+
+</script>
+</html>
