@@ -80,37 +80,16 @@ const char PAGE_MAIN[] PROGMEM = R"=====(
             <p>LED 1</p>
             <div class="statuscontainer">
                 <span>Status:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-                <span class="statusindicator redstatus" name="led1status"></span>
+                <span class="statusindicator redstatus" id="led1_status"></span>
             </div>
             <div class="inputcontainer">
-                <input type="button" class="green_btn" value="on" name="led1on" onclick="switchLED(1, 'on');">
-                <input type="button" class="red_btn" value="off" name="led1off" onclick="switchLED(1, 'off');">
-                <input type="button" class="blue_btn" value="momentary" name="led1moment" onclick="">            
-                <input type="button" class="blue_btn" value="blink" name="led1blink" onclick="">
+                <input type="button" class="green_btn" value="on" id="led1_on" onclick="switchLED(1, 1);">
+                <input type="button" class="red_btn" value="off" id="led1_off" onclick="switchLED(1, 0);">
+                <input type="button" class="blue_btn" value="momentary" id="led1_moment" onclick="">            
+                <input type="button" class="blue_btn" value="blink" id="led1_blink" onclick="">
             </div>
         </div>
 
-        <div class="ioctrl">
-            <p>LED 2</p>
-            <div class="statuscontainer">
-                <span>Status:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-                <span class="statusindicator redstatus" name="led2status"></span>
-            </div>
-            <div class="inputcontainer">
-                <input type="button" class="green_btn" value="on" name="led2on" onclick="switchLED(2, 'on');">
-                <input type="button" class="red_btn" value="off" name="led2off" onclick="switchLED(2, 'off');">
-                <input type="button" class="blue_btn" value="momentary" name="led2moment" onclick="">            
-                <input type="button" class="blue_btn" value="blink" name="led2blink" onclick="switchLED(2, 'blink');">
-            </div>
-        </div>
-
-        <div class="ioctrl">
-            <p>Button 1</p> 
-            <div class="statuscontainer">
-                <span>Status:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-                <span class="statusindicator redstatus" name="btn1status"></span>
-            </div>
-        </div>
     </div>
 </body>
 <script type="text/javascript">
@@ -136,24 +115,33 @@ respond with actual button state
 }
 
 */
-
     // index is the index number of the LED
     // state can be 'on', 'off', or 'blink'
     function switchLED(index, state) {
         let jhttp = new XMLHttpRequest();
-        alert(`led/?index=${index}&state=${state}`);
         jhttp.onload = function() {
-            let jsondata = json.parse(jhttp.)
-            let index = jhttp.
+            let jsondata = JSON.parse(jhttp.responseText);
+            let index = jsondata.index;
+            let state = jsondata.state;
+            statusElement = document.getElementById(`led${index}_status`);
+            if (state <= 0) {
+                statusElement.classList.remove("greenstatus");
+                statusElement.classList.add("redstatus");
+            }
+            else {
+                statusElement.classList.remove("redstatus");
+                statusElement.classList.add("greenstatus");
+            }
+
         }
-        jhttp.open('GET', `/led/${index}/${state}`);
+        jhttp.open('GET', `/led?index=${index}&state=${state}`);
         jhttp.send(); 
     }
 
     /* function to turn on the LED when the button is
     pressed, and turn off the LED when the button is released */
     function momentaryLED(index, state) {
-
+    
     }
 
     function response() {

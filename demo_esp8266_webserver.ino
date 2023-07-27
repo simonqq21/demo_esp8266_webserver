@@ -39,7 +39,7 @@ void setup() {
   digitalWrite(LED1, led1Bit);  
 
   //  disable watchdog timer
-  wdt_disable();
+//  wdt_disable();
   
   Serial.print("Connecting to "); 
   Serial.println(LOCAL_SSID);
@@ -85,18 +85,32 @@ void sendWebpage() {
 //}
 void sendJSON() {
   strcpy(json, "{\n");
-  sprintf(buff, "type: led,\n");
+  sprintf(buff, "\"type\": \"led\",\n");
   strcat(json, buff);
-  sprintf(buff, "index: %d,\n", 1);
+  sprintf(buff, "\"index\": %d,\n", 1);
   strcat(json, buff);
-  sprintf(buff, "state: %d,\n}", led1Bit);
+  sprintf(buff, "\"state\": %d\n}", led1Bit);
   strcat(json, buff);
   Serial.println(json);
-  server.send(200, "text/json", json);
+  server.send(200, "application/json", json);
 }
 
 void controlLED() {
-    
+    String index = server.arg("index");
+    String state = server.arg("state");
+    if (state == "0") {
+      led1Bit = false;
+    }
+    else {
+      led1Bit = true;
+    }
+    Serial.print("Index=");
+    Serial.println(index);
+    Serial.print("State=");
+    Serial.println(led1Bit);
+    Serial.println();
+    digitalWrite(LED1, led1Bit);
+    sendJSON();
 }
  
 void printWiFi() {
