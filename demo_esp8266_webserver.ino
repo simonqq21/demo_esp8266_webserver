@@ -24,8 +24,10 @@ char buff[32];
 bool led1Bit = false;
 uint32_t lastTimeUpdated = 0;
 
-// LED pin
-#define LED1 2
+// LED pins
+// #define LED1 2 
+int LEDS[3] = {2, 3, 4};
+int BUTTONS[1] = {5}; 
 
 // current time 
 unsigned long currentTime = millis();
@@ -35,9 +37,14 @@ const long timeoutTime = 2000;
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
-  pinMode(LED1, OUTPUT);
-  digitalWrite(LED1, led1Bit);  
-
+  for (int pin: LEDS) {
+    pinMode(pin, OUTPUT);
+    digitalWrite(pin, LOW);
+  }
+  for (int pin: BUTTONS) {
+    pinMode(pin, iNPUT_PULLUP);
+  }
+  
   //  disable watchdog timer
 //  wdt_disable();
   

@@ -84,12 +84,15 @@
             <div class="inputcontainer">
                 <input type="button" class="green_btn" value="on" id="led1_on" onclick="switchLED(1, 1);">
                 <input type="button" class="red_btn" value="off" id="led1_off" onclick="switchLED(1, 0);">
-                <input type="button" class="blue_btn" value="momentary" id="led1_moment" onclick="">            
+                <input type="button" class="blue_btn" value="momentary" id="led1_moment" onmousedown="alert('LED momentary on');" 
+                    ontouchstart="alert('LED momentary on');"           
+                    onmouseup="alert('LED off');" 
+                    ontouchend="alert('LED off');"   
+                >
                 <input type="button" class="blue_btn" value="blink" id="led1_blink" onclick="">
             </div>
         </div>
-
-    </div>
+    </div>       
 </body>
 <script type="text/javascript">
     let jhttp = new XMLHttpRequest();
@@ -118,21 +121,18 @@ respond with actual button state
     // state can be 'on', 'off', or 'blink'
     function switchLED(index, state) {
         let jhttp = new XMLHttpRequest();
-        alert(`led/?index=${index}&state=${state}`);
         jhttp.onload = function() {
             let jsondata = JSON.parse(jhttp.responseText);
-            // let index = jsondata.index;
-            // let state = jsondata.state;
-            // document.getElementByID(`led${index}_status`).innerHTML = jsondata;
-            alert(jsondata);
-            statusElement = document.getElementByID(`led${index}_status`);
+            let index = jsondata.index;
+            let state = jsondata.state;
+            statusElement = document.getElementById(`led${index}_status`);
             if (state <= 0) {
-                statusElement.classlist.remove("greenstatus");
-                statusElement.classlist.add("redstatus");
+                statusElement.classList.remove("greenstatus");
+                statusElement.classList.add("redstatus");
             }
             else {
-                statusElement.classlist.remove("redstatus");
-                statusElement.classlist.add("greenstatus");
+                statusElement.classList.remove("redstatus");
+                statusElement.classList.add("greenstatus");
             }
 
         }
@@ -143,7 +143,7 @@ respond with actual button state
     /* function to turn on the LED when the button is
     pressed, and turn off the LED when the button is released */
     function momentaryLED(index, state) {
-    
+        
     }
 
     function response() {
