@@ -72,7 +72,7 @@
         }
     </style>
 </head>  
-<body onload="process()">
+<body onload="initBody()">
     <header>
         <h1>ESP8266 Asynchronous Web Server Example</h1>
     </header>
@@ -88,7 +88,8 @@
             <div class="inputcontainer">
                 <input type="button" class="green_btn" value="on" id="led0_on" onclick="switchLED(0, 1);">
                 <input type="button" class="red_btn" value="off" id="led0_off" onclick="switchLED(0, 0);">
-                <input type="button" class="blue_btn" value="momentary" id="led0_moment" onmousedown="switchLED(0, 1);" 
+                <input type="button" class="blue_btn" value="momentary" id="led0_moment" 
+                    onmousedown="switchLED(0, 1);" 
                     ontouchstart="switchLED(0, 1);"           
                     onmouseup="switchLED(0, 0);" 
                     ontouchend="switchLED(0, 0);"   
@@ -106,7 +107,8 @@
             <div class="inputcontainer">
                 <input type="button" class="green_btn" value="on" id="led1_on" onclick="switchLED(1, 1);">
                 <input type="button" class="red_btn" value="off" id="led1_off" onclick="switchLED(1, 0);">
-                <input type="button" class="blue_btn" value="momentary" id="led1_moment" onmousedown="switchLED(1, 1);" 
+                <input type="button" class="blue_btn" value="momentary" id="led1_moment" 
+                    onmousedown="switchLED(1, 1);" 
                     ontouchstart="switchLED(1, 1);"           
                     onmouseup="switchLED(1, 0);" 
                     ontouchend="switchLED(1, 0);"   
@@ -124,15 +126,23 @@
             <div class="inputcontainer">
                 <input type="button" class="green_btn" value="on" id="led2_on" onclick="switchLED(2, 1);">
                 <input type="button" class="red_btn" value="off" id="led2_off" onclick="switchLED(2, 0);">
-                <input type="button" class="blue_btn" value="momentary" id="led2_moment" onmousedown="switchLED(2, 1);" 
-                    ontouchstart="switchLED(2, 1);"           
+                <input type="button" class="blue_btn" value="momentary" id="led2_moment" 
+                    onmousedown="switchLED(2, 1);" 
                     onmouseup="switchLED(2, 0);" 
-                    ontouchend="switchLED(2, 0);"   
+                    ontouchstart="switchLED(2, 1);" 
+                    ontouchend="switchLED(2, 0);" 
                 >
                 <input type="button" class="blue_btn" value="blink" id="led2_blink" onclick="switchLED(2, 2);">
             </div>
         </div>
 
+        <div class="ioctrl">
+            <p>Button 1</p> 
+            <div class="statuscontainer">
+                <span>Status:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                <span class="statusindicator redstatus" name="btn1_status"></span>
+            </div>
+        </div>
 
 
     </div>  
@@ -172,13 +182,9 @@ respond with actual button state
             statusElement = document.getElementById(`led${index}_status`);
             if (state <= 0) {
                 changeStatusColor(statusElement, "redstatus");
-                // statusElement.classList.remove("greenstatus");
-                // statusElement.classList.add("redstatus");
             }
             else {
                 changeStatusColor(statusElement, "greenstatus");
-                // statusElement.classList.remove("redstatus");
-                // statusElement.classList.add("greenstatus");
             }
             if (blink > 0) { 
                 changeStatusColor(statusElement, "bluestatus");
@@ -196,7 +202,7 @@ respond with actual button state
 
     /* function to turn on the LED when the button is
     pressed, and turn off the LED when the button is released */
-    function momentaryLED(index, state) {
+    function queryButton(index, state) {
         
     }
 
@@ -209,6 +215,30 @@ respond with actual button state
 
     function process() {
     
+    }
+
+    function initBody() {
+        // check if browser is touch enabled or not 
+        if (isTouchEnabled()) {
+            alert("touch");
+            for (element of document.getElementsByTagName("*")) {
+                element.onmousedown = ""; 
+                element.onmouseup = "";
+            }    
+        }
+        else {
+            alert("mouse");
+            for (element of document.getElementsByTagName("*")) {
+                element.ontouchstart = ""; 
+                element.ontouchend = "";
+            } 
+        }
+    }
+
+    function isTouchEnabled() {
+        return ('ontouchstart' in window) || 
+            (navigator.maxTouchPoints > 0) || 
+            (navigator.msMaxTouchPoints > 0);
     }
 </script>
 </html>
