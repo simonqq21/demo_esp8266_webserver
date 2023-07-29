@@ -140,7 +140,7 @@
             <p>Button 1</p> 
             <div class="statuscontainer">
                 <span>Status:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-                <span class="statusindicator redstatus" name="btn1_status"></span>
+                <span class="statusindicator redstatus" name="btn0_status"></span>
             </div>
         </div>
 
@@ -171,7 +171,6 @@ respond with actual button state
 
 */
     // index is the index number of the LED
-    // state can be 'on', 'off', or 'blink'
     function switchLED(index, state) {
         let jhttp = new XMLHttpRequest();
         jhttp.onload = function() {
@@ -200,11 +199,28 @@ respond with actual button state
         statusElement.classList.add(statusColor);
     }
 
-    /* function to turn on the LED when the button is
-    pressed, and turn off the LED when the button is released */
-    function queryButton(index, state) {
-        
+    // function to query the state of each physical button on the 
+    // ESP
+    function queryButton(index) {
+        let jhttp = new XMLHttpRequest();
+        jhttp.onload = function() {
+            let jsondata = JSON.parse(jhttp.responseText);
+            let type = jsondata.type;
+            let index = jsondata.index; 
+            let state = jsondata.state;
+            statusElement = document.getElementById(`btn${index}_status`);
+            if (state <= 0) {
+                changeStatusColor(statusElement, "redstatus");
+            }
+            else {
+                changeStatusColor(statusElement, "greenstatus");
+            }
+        }
+        jhttp.open('GET', `/button?index=${index}`);
+        jhttp.send();
     }
+
+    setInterval(queryButton, 50, 0);
 
     function response() {
         let message; 
