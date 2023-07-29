@@ -21,13 +21,17 @@ char json[2048];
 char buff[32];
 
 // status variables 
-bool led1Bit = false;
+bool ledBits[] = {false, false, false};
+bool ledBlinks[] = {false, false, false};
+unsigned long lastTimeBlinked[] = {0, 0, 0};
+int onIntervals[] = {1000, 1000, 1000}, offIntervals[] = {1500, 2000, 3000};
 uint32_t lastTimeUpdated = 0;
 
 // LED pins
 // #define LED1 2 
 int LEDS[3] = {2, 3, 4};
 int BUTTONS[1] = {5}; 
+int globalLEDIndex = 0; 
 
 // current time 
 unsigned long currentTime = millis();
@@ -42,7 +46,7 @@ void setup() {
     digitalWrite(pin, LOW);
   }
   for (int pin: BUTTONS) {
-    pinMode(pin, iNPUT_PULLUP);
+    pinMode(pin, INPUT_PULLUP);
   }
   
   //  disable watchdog timer
@@ -76,6 +80,8 @@ void loop() {
 //    
 //
 //  }
+  for (int i=0;i<3;i++)
+    blinkLED(i);
   server.handleClient();
 }
 
@@ -94,32 +100,57 @@ void sendJSON() {
   strcpy(json, "{\n");
   sprintf(buff, "\"type\": \"led\",\n");
   strcat(json, buff);
-  sprintf(buff, "\"index\": %d,\n", 1);
+  sprintf(buff, "\"index\": %d,\n", globalLEDIndex);
   strcat(json, buff);
-  sprintf(buff, "\"state\": %d\n}", led1Bit);
+  sprintf(buff, "\"state\": %d,\n", ledBits[globalLEDIndex]);
+  strcat(json, buff);
+  sprintf(buff, "\"blink\": %d\n}", ledBlinks[globalLEDIndex]);
   strcat(json, buff);
   Serial.println(json);
   server.send(200, "application/json", json);
 }
 
 void controlLED() {
-    String index = server.arg("index");
-    String state = server.arg("state");
-    if (state == "0") {
-      led1Bit = false;
-    }
-    else {
-      led1Bit = true;
-    }
-    Serial.print("Index=");
-    Serial.println(index);
-    Serial.print("State=");
-    Serial.println(led1Bit);
-    Serial.println();
-    digitalWrite(LED1, led1Bit);
-    sendJSON();
+  int index = server.arg("index").toInt();
+  globalLEDIndex = index;
+  String state = server.arg("state");
+  if (state == "0") {
+    ledBlinks[index] = false;
+    ledBits[index] = false;
+  }
+  else if (state == "1") {
+    ledBlinks[index] = false;
+    ledBits[index] = true;
+  }
+//    blink if state == 2  
+  else if (state == "2") {
+    ledBlinks[index] = true;
+  }
+  Serial.print("Index=");
+  Serial.println(index);
+  Serial.print("State=");
+  Serial.println(ledBits[index]);
+  Serial.println();
+  digitalWrite(LEDS[index], ledBits[index]);
+  sendJSON();
 }
- 
+
+void blinkLED(int index) {
+  if (ledBlinks[index]) {
+    
+    if (millis() - lastTimeBlinked[index] > offIntervals[index] && !ledBits[index]) {
+      lastTimeBlinked[index] = millis();
+      ledBits[index] = true;
+      digitalWrite(LEDS[index], ledBits[index]);
+    }
+    if (millis() - lastTimeBlinked[index] > onIntervals[index] && ledBits[index]) {
+      lastTimeBlinked[index] = millis();
+      ledBits[index] = false;
+      digitalWrite(LEDS[index], ledBits[index]);
+    }
+  } 
+}
+
 void printWiFi() {
   Serial.println(" ");
   Serial.println("WiFi connected.");

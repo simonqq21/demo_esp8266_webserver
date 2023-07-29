@@ -43,6 +43,10 @@ const char PAGE_MAIN[] PROGMEM = R"=====(
             background-color: green;
         }
 
+        .bluestatus {
+            background-color: blue;
+        }
+
         .inputcontainer {
             margin-left: 40px;
         }
@@ -80,17 +84,59 @@ const char PAGE_MAIN[] PROGMEM = R"=====(
             <p>LED 1</p>
             <div class="statuscontainer">
                 <span>Status:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                <span class="statusindicator redstatus" id="led0_status"></span>
+            </div>
+            <div class="inputcontainer">
+                <input type="button" class="green_btn" value="on" id="led0_on" onclick="switchLED(0, 1);">
+                <input type="button" class="red_btn" value="off" id="led0_off" onclick="switchLED(0, 0);">
+                <input type="button" class="blue_btn" value="momentary" id="led0_moment" onmousedown="switchLED(0, 1);" 
+                    ontouchstart="switchLED(0, 1);"           
+                    onmouseup="switchLED(0, 0);" 
+                    ontouchend="switchLED(0, 0);"   
+                >
+                <input type="button" class="blue_btn" value="blink" id="led0_blink" onclick="switchLED(0, 2);">
+            </div>
+        </div>
+         
+        <div class="ioctrl">
+            <p>LED 1</p>
+            <div class="statuscontainer">
+                <span>Status:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
                 <span class="statusindicator redstatus" id="led1_status"></span>
             </div>
             <div class="inputcontainer">
                 <input type="button" class="green_btn" value="on" id="led1_on" onclick="switchLED(1, 1);">
                 <input type="button" class="red_btn" value="off" id="led1_off" onclick="switchLED(1, 0);">
-                <input type="button" class="blue_btn" value="momentary" id="led1_moment" onclick="">            
-                <input type="button" class="blue_btn" value="blink" id="led1_blink" onclick="">
+                <input type="button" class="blue_btn" value="momentary" id="led1_moment" onmousedown="switchLED(1, 1);" 
+                    ontouchstart="switchLED(1, 1);"           
+                    onmouseup="switchLED(1, 0);" 
+                    ontouchend="switchLED(1, 0);"   
+                >
+                <input type="button" class="blue_btn" value="blink" id="led1_blink" onclick="switchLED(1, 2);">
             </div>
         </div>
 
-    </div>
+        <div class="ioctrl">
+            <p>LED 2</p>
+            <div class="statuscontainer">
+                <span>Status:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                <span class="statusindicator redstatus" id="led2_status"></span>
+            </div>
+            <div class="inputcontainer">
+                <input type="button" class="green_btn" value="on" id="led2_on" onclick="switchLED(2, 1);">
+                <input type="button" class="red_btn" value="off" id="led2_off" onclick="switchLED(2, 0);">
+                <input type="button" class="blue_btn" value="momentary" id="led2_moment" onmousedown="switchLED(2, 1);" 
+                    ontouchstart="switchLED(2, 1);"           
+                    onmouseup="switchLED(2, 0);" 
+                    ontouchend="switchLED(2, 0);"   
+                >
+                <input type="button" class="blue_btn" value="blink" id="led2_blink" onclick="switchLED(2, 2);">
+            </div>
+        </div>
+
+
+
+    </div>  
 </body>
 <script type="text/javascript">
     let jhttp = new XMLHttpRequest();
@@ -123,25 +169,36 @@ respond with actual button state
             let jsondata = JSON.parse(jhttp.responseText);
             let index = jsondata.index;
             let state = jsondata.state;
+            let blink = jsondata.blink;
             statusElement = document.getElementById(`led${index}_status`);
             if (state <= 0) {
-                statusElement.classList.remove("greenstatus");
-                statusElement.classList.add("redstatus");
+                changeStatusColor(statusElement, "redstatus");
+                // statusElement.classList.remove("greenstatus");
+                // statusElement.classList.add("redstatus");
             }
             else {
-                statusElement.classList.remove("redstatus");
-                statusElement.classList.add("greenstatus");
+                changeStatusColor(statusElement, "greenstatus");
+                // statusElement.classList.remove("redstatus");
+                // statusElement.classList.add("greenstatus");
             }
-
+            if (blink > 0) { 
+                changeStatusColor(statusElement, "bluestatus");
+            }
         }
         jhttp.open('GET', `/led?index=${index}&state=${state}`);
         jhttp.send(); 
     }
 
+    // function to change color of status indicator
+    function changeStatusColor(statusElement, statusColor) {
+        statusElement.className = "statusindicator";
+        statusElement.classList.add(statusColor);
+    }
+
     /* function to turn on the LED when the button is
     pressed, and turn off the LED when the button is released */
     function momentaryLED(index, state) {
-    
+        
     }
 
     function response() {
