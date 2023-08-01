@@ -1,6 +1,6 @@
 #include <ESP8266WiFi.h> 
 #include <ESP8266WebServer.h>
-#include "Webpage.h" 
+#include <LittleFS.h>
 
 #define LOCAL_SSID "QUE-STARLINK"
 #define LOCAL_PASS "Quefamily01259"
@@ -17,15 +17,17 @@ IPAddress secondaryDNS(8,8,4,4);
 
 // variable to store the HTTP request
 String header; 
-char json[2048];
+String html;
+char json[256];
 char buff[32];
 
 // status variables 
 bool ledBits[] = {false, false, false};
 bool ledBlinks[] = {false, false, false};
 unsigned long lastTimeBlinked[] = {0, 0, 0};
-int onIntervals[] = {1000, 1000, 1000}, offIntervals[] = {1500, 2000, 3000};
+int onIntervals[] = {1000, 1000, 1000}, offIntervals[] = {1000, 3000, 7000};
 uint32_t lastTimeUpdated = 0;
+bool buttonBits[] = {false};
 
 // LED pins
 // #define LED1 2 
@@ -39,6 +41,8 @@ unsigned long currentTime = millis();
 unsigned long previousTime = 0; 
 const long timeoutTime = 2000; 
 
+File indexPage; 
+
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
@@ -50,12 +54,17 @@ void setup() {
     pinMode(pin, INPUT_PULLUP);
   }
   
+  if (!LittleFS.begin()) {
+    Serial.println("An error occured while mounting LittleFS.");
+  }
+  
   Serial.print("Connecting to "); 
   Serial.println(LOCAL_SSID);
 
   if (!WiFi.config(local_IP, gateway, subnet, primaryDNS, secondaryDNS)) {
     Serial.println("Station failed to configure.");
   }
+  
   WiFi.begin(LOCAL_SSID, LOCAL_PASS); 
   while (WiFi.status() != WL_CONNECTED) {
     delay(500); 
@@ -67,7 +76,7 @@ void setup() {
 
   server.on("/", sendWebpage); 
   server.on("/led", controlLED);
-  server.on("/button", sendButtonJSON);
+  server.on("/button", sendBtnJSON);
   server.begin();
 }
 
@@ -84,7 +93,16 @@ void loop() {
 
 void sendWebpage() {
   Serial.println("Sending web page");
-  server.send(200, "text/html", PAGE_MAIN);
+  indexPage = LittleFS.open("/index.html", "r");
+  if (!indexPage) {
+    Serial.println("Failed to open file for reading."); 
+  }
+  html = "";
+  while (indexPage.available()) {
+    html += (char) indexPage.read();
+  }
+  server.send(200, "text/html", html);
+  indexPage.close();
 }
 
 // button json format 
@@ -101,7 +119,7 @@ void sendBtnJSON() {
   strcat(json, buff);
   sprintf(buff, "\"index\": %d,\n", globalBtnIndex);
   strcat(json, buff);
-  sprintf(buff, "\"state\": %d,\n}", buttonBits[globalLEDIndex]);
+  sprintf(buff, "\"state\": %d\n}", buttonBits[globalBtnIndex]);
   strcat(json, buff);
   Serial.println(json);
   server.send(200, "application/json", json);

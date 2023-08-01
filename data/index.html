@@ -1,4 +1,3 @@
-const char PAGE_MAIN[] PROGMEM = R"=====(
 <!DOCTYPE html>
 <html>
 <head>
@@ -8,49 +7,39 @@ const char PAGE_MAIN[] PROGMEM = R"=====(
         * {
             font-family: Arial, serif;
         }
-
         header {
             padding: 0.1em 1.5em;
             background: #eeeeff;
         }
-
         .statuscontainer {
             text-align: left;
             margin-left: 40px;
         }
-
         .ioctrl {
             margin-bottom: 20px;
         }
-
         .ioctrl p {
             padding: 0;
             margin: 0;
         }
-
         .statusindicator {
             width: 20px;
             height: 20px;
             border-radius: 50%;
             display: inline-block;
         }
-
         .redstatus {
             background-color: red;
         }
-
         .greenstatus {
             background-color: green;
         }
-
         .bluestatus {
             background-color: blue;
         }
-
         .inputcontainer {
             margin-left: 40px;
         }
-
         input[type="button"] {
             height: 40px;
             min-width: 50px;
@@ -59,15 +48,12 @@ const char PAGE_MAIN[] PROGMEM = R"=====(
             font-size: 15px;
             color: white;
         }
-
         .green_btn {
             background-color: green;
         }
-
         .red_btn {
             background-color: red;
         }
-
         .blue_btn {
             background-color: blue;
         }
@@ -79,12 +65,12 @@ const char PAGE_MAIN[] PROGMEM = R"=====(
     </header>
     <div class="ioctrlcontainer">
         <h2>Control Panel</h2>
-         
         <div class="ioctrl">
             <p>LED 1</p>
             <div class="statuscontainer">
                 <span>Status:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
                 <span class="statusindicator redstatus" id="led0_status"></span>
+                <span id="led0_statusword"> Off</span>
             </div>
             <div class="inputcontainer">
                 <input type="button" class="green_btn" value="on" id="led0_on" onclick="switchLED(0, 1);">
@@ -98,12 +84,12 @@ const char PAGE_MAIN[] PROGMEM = R"=====(
                 <input type="button" class="blue_btn" value="blink" id="led0_blink" onclick="switchLED(0, 2);">
             </div>
         </div>
-         
         <div class="ioctrl">
             <p>LED 1</p>
             <div class="statuscontainer">
                 <span>Status:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
                 <span class="statusindicator redstatus" id="led1_status"></span>
+                <span id="led1_statusword"> Off</span>
             </div>
             <div class="inputcontainer">
                 <input type="button" class="green_btn" value="on" id="led1_on" onclick="switchLED(1, 1);">
@@ -117,12 +103,12 @@ const char PAGE_MAIN[] PROGMEM = R"=====(
                 <input type="button" class="blue_btn" value="blink" id="led1_blink" onclick="switchLED(1, 2);">
             </div>
         </div>
-
         <div class="ioctrl">
             <p>LED 2</p>
             <div class="statuscontainer">
                 <span>Status:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
                 <span class="statusindicator redstatus" id="led2_status"></span>
+                <span id="led2_statusword"> Off</span>
             </div>
             <div class="inputcontainer">
                 <input type="button" class="green_btn" value="on" id="led2_on" onclick="switchLED(2, 1);">
@@ -136,43 +122,18 @@ const char PAGE_MAIN[] PROGMEM = R"=====(
                 <input type="button" class="blue_btn" value="blink" id="led2_blink" onclick="switchLED(2, 2);">
             </div>
         </div>
-
         <div class="ioctrl">
             <p>Button 1</p> 
             <div class="statuscontainer">
                 <span>Status:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-                <span class="statusindicator redstatus" name="btn1_status"></span>
+                <span class="statusindicator redstatus" id="btn0_status"></span>
+                <span id="btn0_statusword"> LOW</span>
             </div>
         </div>
-
-
     </div>  
 </body>
 <script type="text/javascript">
     let jhttp = new XMLHttpRequest();
-
-/*
-URL passed from browser to uc
-update LED state 
-/led/${index}/${state}
-
-JSON passed from uc to browser
-respond with actual LED state
-{
-    type: "led",
-    index: ${index},
-    state: ${state}
-}
-respond with actual button state 
-{
-    type: "button",
-    index: ${index},
-    state: ${state}
-}
-
-*/
-    // index is the index number of the LED
-    // state can be 'on', 'off', or 'blink'
     function switchLED(index, state) {
         let jhttp = new XMLHttpRequest();
         jhttp.onload = function() {
@@ -180,62 +141,64 @@ respond with actual button state
             let index = jsondata.index;
             let state = jsondata.state;
             let blink = jsondata.blink;
-            statusElement = document.getElementById(`led${index}_status`);
+            let statusElement = document.getElementById(`led${index}_status`);
+            let statusWordElement = document.getElementById(`led${index}_statusword`);
             if (state <= 0) {
                 changeStatusColor(statusElement, "redstatus");
+                statusWordElement.innerHTML = "Off";
             }
             else {
                 changeStatusColor(statusElement, "greenstatus");
+                statusWordElement.innerHTML = "On";
             }
             if (blink > 0) { 
                 changeStatusColor(statusElement, "bluestatus");
+                statusWordElement.innerHTML = "Blinking";
             }
         }
         jhttp.open('GET', `/led?index=${index}&state=${state}`);
         jhttp.send(); 
     }
-
-    // function to change color of status indicator
     function changeStatusColor(statusElement, statusColor) {
         statusElement.className = "statusindicator";
         statusElement.classList.add(statusColor);
     }
-
-    /* function to turn on the LED when the button is
-    pressed, and turn off the LED when the button is released */
-    function queryButton(index, state) {
-        
+    function queryButton(index) {
+        let jhttp = new XMLHttpRequest();
+        jhttp.onload = function() {
+            let jsondata = JSON.parse(jhttp.responseText);
+            let type = jsondata.type;
+            let index = jsondata.index; 
+            let state = jsondata.state;
+            let statusElement = document.getElementById(`btn${index}_status`);
+            let statusWordElement = document.getElementById(`btn${index}_statusword`);
+            if (state <= 0) {
+                changeStatusColor(statusElement, "redstatus");
+                statusWordElement.innerHTML = " LOW";
+            }
+            else {
+                changeStatusColor(statusElement, "greenstatus");
+                statusWordElement.innerHTML = " HIGH";
+            }
+        }
+        jhttp.open('GET', `/button?index=${index}`);
+        jhttp.send();
     }
-
-    function response() {
-        let message; 
-        let jsonresponse = jhttp.responseText; 
-
-
-    }
-
-    function process() {
-    
-    }
-
+    setInterval(queryButton, 20, 0);
     function initBody() {
-        // check if browser is touch enabled or not 
         if (isTouchEnabled()) {
-            alert("touch");
             for (element of document.getElementsByTagName("*")) {
                 element.onmousedown = ""; 
                 element.onmouseup = "";
             }    
         }
         else {
-            alert("mouse");
             for (element of document.getElementsByTagName("*")) {
                 element.ontouchstart = ""; 
                 element.ontouchend = "";
             } 
         }
     }
-
     function isTouchEnabled() {
         return ('ontouchstart' in window) || 
             (navigator.maxTouchPoints > 0) || 
@@ -243,4 +206,3 @@ respond with actual button state
     }
 </script>
 </html>
-)=====";
