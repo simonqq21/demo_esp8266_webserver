@@ -12,8 +12,9 @@ ESP8266WebServer server(80);
 IPAddress local_IP(192,168,5,75);
 IPAddress gateway(192,168,5,1);
 IPAddress subnet(255,255,255,0);
-IPAddress primaryDNS(8,8,8,8);
-IPAddress secondaryDNS(8,8,4,4);
+//IPAddress primaryDNS(8,8,8,8);
+//IPAddress secondaryDNS(8,8,4,4);
+#define APMODE true
 
 // variable to store the HTTP request
 String header; 
@@ -57,22 +58,32 @@ void setup() {
   if (!LittleFS.begin()) {
     Serial.println("An error occured while mounting LittleFS.");
   }
-  
-  Serial.print("Connecting to "); 
-  Serial.println(LOCAL_SSID);
 
-  if (!WiFi.config(local_IP, gateway, subnet, primaryDNS, secondaryDNS)) {
-    Serial.println("Station failed to configure.");
+  if (APMODE) {
+    Serial.println("Starting AP");
+    if (!WiFi.softAP("simon")) {
+      Serial.println("Soft AP failed to configure.");
+    }
+    WiFi.softAPConfig(local_IP, gateway, subnet);
+    Serial.print("IP Address: ");
+    Serial.println(WiFi.softAPIP());
   }
+  else {
+    Serial.print("Connecting to "); 
+    Serial.println(LOCAL_SSID);
   
-  WiFi.begin(LOCAL_SSID, LOCAL_PASS); 
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500); 
-    Serial.print(".");
+    if (!WiFi.config(local_IP, gateway, subnet)) {
+      Serial.println("Station failed to configure.");
+    }
+    
+    WiFi.begin(LOCAL_SSID, LOCAL_PASS); 
+    while (WiFi.status() != WL_CONNECTED) {
+      delay(500); 
+      Serial.print(".");
+    }
+    //  print local IP address and start web server 
+    printWiFi();
   }
-
-  //  print local IP address and start web server 
-  printWiFi();
 
   server.on("/", sendWebpage); 
   server.on("/led", controlLED);
@@ -121,7 +132,7 @@ void sendBtnJSON() {
   strcat(json, buff);
   sprintf(buff, "\"state\": %d\n}", buttonBits[globalBtnIndex]);
   strcat(json, buff);
-  Serial.println(json);
+//  Serial.println(json);
   server.send(200, "application/json", json);
 }
 
@@ -167,7 +178,7 @@ void sendLEDJSON(int index) {
   strcat(json, buff);
   sprintf(buff, "\"blink\": %d\n}", ledBlinks[index]);
   strcat(json, buff);
-  Serial.println(json);
+//  Serial.println(json);
   server.send(200, "application/json", json);
 }
 
