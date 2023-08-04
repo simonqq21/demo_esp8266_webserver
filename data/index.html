@@ -134,35 +134,54 @@
 </body>
 <script type="text/javascript">
     let jhttp = new XMLHttpRequest();
+    const onText = "On";
+    const offText = "Off";
+    const blinkText = "Blinking";
+
     function switchLED(index, state) {
         let jhttp = new XMLHttpRequest();
         jhttp.onload = function() {
-            let jsondata = JSON.parse(jhttp.responseText);
-            let index = jsondata.index;
-            let state = jsondata.state;
-            let blink = jsondata.blink;
-            let statusElement = document.getElementById(`led${index}_status`);
-            let statusWordElement = document.getElementById(`led${index}_statusword`);
-            if (state <= 0) {
-                changeStatusColor(statusElement, "redstatus");
-                statusWordElement.innerHTML = "Off";
-            }
-            else {
-                changeStatusColor(statusElement, "greenstatus");
-                statusWordElement.innerHTML = "On";
-            }
-            if (blink > 0) { 
-                changeStatusColor(statusElement, "bluestatus");
-                statusWordElement.innerHTML = "Blinking";
-            }
+            updateLEDStatus(jhttp);
         }
         jhttp.open('GET', `/led?index=${index}&state=${state}`);
         jhttp.send(); 
     }
+
+    function queryLED(index) {
+        let jhttp = new XMLHttpRequest();
+        jhttp.onload = function() {
+            updateLEDStatus(jhttp);
+        }
+        jhttp.open('GET', `/ledstatus?index=${index}`);
+        jhttp.send(); 
+    }
+
+    function updateLEDStatus(jhttp) {
+        let jsondata = JSON.parse(jhttp.responseText);
+        let index = jsondata.index;
+        let state = jsondata.state;
+        let blink = jsondata.blink;
+        let statusElement = document.getElementById(`led${index}_status`);
+        let statusWordElement = document.getElementById(`led${index}_statusword`);
+        if (state <= 0) {
+            changeStatusColor(statusElement, "redstatus");
+            statusWordElement.innerHTML = offText;
+        }
+        else {
+            changeStatusColor(statusElement, "greenstatus");
+            statusWordElement.innerHTML = onText;
+        }
+        if (blink > 0) { 
+            changeStatusColor(statusElement, "bluestatus");
+            statusWordElement.innerHTML = blinkText;
+        }
+    }
+
     function changeStatusColor(statusElement, statusColor) {
         statusElement.className = "statusindicator";
         statusElement.classList.add(statusColor);
     }
+
     function queryButton(index) {
         let jhttp = new XMLHttpRequest();
         jhttp.onload = function() {
@@ -184,7 +203,7 @@
         jhttp.open('GET', `/button?index=${index}`);
         jhttp.send();
     }
-    setInterval(queryButton, 20, 0);
+
     function initBody() {
         if (isTouchEnabled()) {
             for (element of document.getElementsByTagName("*")) {
@@ -198,7 +217,12 @@
                 element.ontouchend = "";
             } 
         }
+        setInterval(queryButton, 40, 0);
+        setInterval(queryLED, 200, 0);
+        setInterval(queryLED, 200, 1);
+        setInterval(queryLED, 200, 2);
     }
+
     function isTouchEnabled() {
         return ('ontouchstart' in window) || 
             (navigator.maxTouchPoints > 0) || 

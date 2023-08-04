@@ -76,6 +76,7 @@ void setup() {
 
   server.on("/", sendWebpage); 
   server.on("/led", controlLED);
+  server.on("/ledstatus", updateLEDStatus);
   server.on("/button", sendBtnJSON);
   server.begin();
 }
@@ -113,7 +114,6 @@ void sendWebpage() {
 // }
 void sendBtnJSON() {
   globalBtnIndex = server.arg("index").toInt();
-
   strcpy(json, "{\n");
   sprintf(buff, "\"type\": \"button\",\n");
   strcat(json, buff);
@@ -134,7 +134,6 @@ void sendBtnJSON() {
 //}
 void controlLED() {
   int index = server.arg("index").toInt();
-  globalLEDIndex = index;
   String state = server.arg("state");
   if (state == "0") {
     ledBlinks[index] = false;
@@ -155,18 +154,26 @@ void controlLED() {
   Serial.println(ledBits[index]);
   Serial.println();
   digitalWrite(LEDS[index], ledBits[index]);
-  
+  sendLEDJSON(index);
+}
+
+void sendLEDJSON(int index) {
   strcpy(json, "{\n");
   sprintf(buff, "\"type\": \"led\",\n");
   strcat(json, buff);
-  sprintf(buff, "\"index\": %d,\n", globalLEDIndex);
+  sprintf(buff, "\"index\": %d,\n", index);
   strcat(json, buff);
-  sprintf(buff, "\"state\": %d,\n", ledBits[globalLEDIndex]);
+  sprintf(buff, "\"state\": %d,\n", ledBits[index]);
   strcat(json, buff);
-  sprintf(buff, "\"blink\": %d\n}", ledBlinks[globalLEDIndex]);
+  sprintf(buff, "\"blink\": %d\n}", ledBlinks[index]);
   strcat(json, buff);
   Serial.println(json);
   server.send(200, "application/json", json);
+}
+
+void updateLEDStatus() {
+  int ledIndex = server.arg("index").toInt();
+  sendLEDJSON(ledIndex);
 }
 
 void blinkLED(int index) {
